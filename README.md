@@ -731,9 +731,9 @@ export class RecoveryService {
 
 ### Support
 #### Contact
-- Email: support@2fa-desktop.com
-- Discord: [Rejoindre le serveur](https://discord.gg/2fa-desktop)
-- GitHub: [Ouvrir une issue](https://github.com/2fa-desktop/issues)
+- Email: salihketur60@gmail.com
+- Discord: sketur60
+- GitHub: [Ouvrir une issue](https://github.com/MehmetSalihK/2FAapp)
 
 ## 🤝 Contribuer
 
@@ -775,7 +775,7 @@ Nous attendons de tous les contributeurs qu'ils :
 Ce projet est sous licence MIT. Voir le fichier [LICENSE](LICENSE) pour plus de détails.
 
 ### Attribution
-Développé avec ❤️ par l'équipe 2FA Desktop.
+Développé avec ❤️ par Mehmet Salih Kuscu
 
 ---
 
