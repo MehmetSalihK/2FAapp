@@ -9,6 +9,7 @@ module.exports = function override(config) {
         "util": require.resolve("util/"),
         "assert": require.resolve("assert/"),
         "vm": require.resolve("vm-browserify"),
+        "process": require.resolve("process/browser"),
         "fs": false
     };
 
@@ -17,6 +18,10 @@ module.exports = function override(config) {
         fallback: {
             ...config.resolve.fallback,
             ...fallback
+        },
+        alias: {
+            ...config.resolve.alias,
+            'process/browser': require.resolve('process/browser')
         }
     };
 

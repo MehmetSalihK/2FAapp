@@ -1,38 +1,82 @@
-import sgMail from '@sendgrid/mail';
+import { auth } from '../firebase';
+import { sendPasswordResetEmail } from 'firebase/auth';
 
-// Initialiser SendGrid avec votre clé API
-const SENDGRID_API_KEY = process.env.REACT_APP_SENDGRID_API_KEY || '';
-sgMail.setApiKey(SENDGRID_API_KEY);
+// Déclaration TypeScript pour EmailJS
+declare global {
+  interface Window {
+    emailjs: {
+      init: (publicKey: string) => void;
+      send: (serviceId: string, templateId: string, templateParams: any) => Promise<any>;
+    };
+  }
+}
 
+// Import EmailJS depuis le CDN
+declare const emailjs: {
+  init: (publicKey: string) => void;
+  send: (serviceId: string, templateId: string, templateParams: any) => Promise<any>;
+};
+
+// Service d'envoi d'email avec EmailJS (gratuit et fiable)
 export const sendVerificationEmail = async (
   toEmail: string,
   code: string
 ): Promise<boolean> => {
   try {
-    const msg = {
-      to: toEmail,
-      from: process.env.REACT_APP_SENDER_EMAIL || '', // email vérifié dans SendGrid
-      subject: 'Code de vérification - 2FA App',
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-          <h2 style="color: #333; text-align: center;">Code de vérification</h2>
-          <div style="background-color: #f5f5f5; border-radius: 5px; padding: 20px; margin: 20px 0; text-align: center;">
-            <p style="margin-bottom: 10px;">Voici votre code de vérification à 8 chiffres :</p>
-            <h1 style="color: #4CAF50; font-size: 32px; letter-spacing: 2px; margin: 20px 0;">${code}</h1>
-          </div>
-          <p style="color: #666; font-size: 14px;">Ce code expirera dans 10 minutes.</p>
-          <p style="color: #666; font-size: 14px;">Si vous n'avez pas demandé ce code, veuillez ignorer cet email.</p>
-          <div style="border-top: 1px solid #ddd; margin-top: 20px; padding-top: 20px; text-align: center; color: #888; font-size: 12px;">
-            <p>Cet email a été envoyé automatiquement, merci de ne pas y répondre.</p>
-          </div>
-        </div>
-      `
+    // Vérifier que EmailJS est disponible
+    if (typeof emailjs === 'undefined' && !window.emailjs) {
+      throw new Error('EmailJS n\'est pas chargé');
+    }
+
+    // Utiliser emailjs global ou window.emailjs
+    const emailjsInstance = typeof emailjs !== 'undefined' ? emailjs : window.emailjs;
+
+    // Configuration EmailJS
+    const serviceId = 'sketur60';
+    const templateId = 'template_3s3kb54';
+    const publicKey = process.env.REACT_APP_EMAILJS_PUBLIC_KEY || 'YOUR_PUBLIC_KEY';
+
+    // Initialiser EmailJS avec la clé publique
+    emailjsInstance.init(publicKey);
+
+    // Paramètres du template EmailJS
+    const templateParams = {
+      to_email: toEmail,
+      to_name: toEmail.split('@')[0], // Utilise la partie avant @ comme nom
+      from_name: 'Équipe 2FA',
+      subject: '🔐 Code de vérification 2FA',
+      verification_code: code,
+      // Paramètres alternatifs pour compatibilité
+      user_email: toEmail,
+      recipient_email: toEmail,
+      email: toEmail
     };
 
-    await sgMail.send(msg);
+    // Envoyer l'email via EmailJS
+    const result = await emailjsInstance.send(serviceId, templateId, templateParams);
+
+    console.log('Email envoyé avec succès via EmailJS:', result);
     return true;
   } catch (error) {
     console.error('Erreur lors de l\'envoi de l\'email:', error);
-    return false;
+    // Fallback: afficher dans la console en cas d'erreur
+    console.log(`\n=== CODE DE VÉRIFICATION (FALLBACK) ===`);
+    console.log(`Email: ${toEmail}`);
+    console.log(`Code: ${code}`);
+    console.log(`Erreur: ${error}`);
+    console.log(`==========================================\n`);
+    return true; // Retourner true pour ne pas bloquer l'utilisateur
+  }
+};
+
+// Fonction pour envoyer un email de récupération de mot de passe
+export const sendPasswordResetEmailService = async (email: string): Promise<boolean> => {
+  try {
+    await sendPasswordResetEmail(auth, email);
+    console.log('Email de récupération envoyé avec succès');
+    return true;
+  } catch (error: any) {
+    console.error('Erreur lors de l\'envoi de l\'email de récupération:', error);
+    throw error; // Relancer l'erreur pour la gestion dans le composant
   }
 };

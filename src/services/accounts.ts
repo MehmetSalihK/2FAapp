@@ -37,7 +37,7 @@ export const getAccounts = async (userId: string): Promise<Account[]> => {
         const q = query(accountsRef, where('userId', '==', userId));
         const querySnapshot = await getDocs(q);
         
-        return querySnapshot.docs.map(doc => ({
+        return querySnapshot.docs.map((doc: any) => ({
             id: doc.id,
             userId: doc.data().userId,
             name: doc.data().name,

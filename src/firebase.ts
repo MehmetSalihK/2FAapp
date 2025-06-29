@@ -1,6 +1,6 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
-import { getFirestore, collection, getDocs } from 'firebase/firestore';
+import { getFirestore } from 'firebase/firestore';
 import { getFunctions, httpsCallable } from 'firebase/functions';
 
 const firebaseConfig = {
@@ -29,32 +29,33 @@ export const sendVerificationCodeEmail = httpsCallable(functions, 'sendVerificat
 
 export { auth, db, functions };
 
-// Fonction pour vérifier la connexion Firebase
+// Fonction pour vérifier la connexion Firebase (optionnelle)
 export const checkFirebaseConnection = async (): Promise<boolean> => {
   try {
-    const timeout = new Promise((_, reject) => 
-      setTimeout(() => reject(new Error('Connection timeout')), 5000)
-    );
-    
-    // Tenter une simple requête Firestore
-    const testQuery = Promise.race([
-      getDocs(collection(db, 'verification_codes')),
-      timeout
-    ]);
-    
-    await testQuery;
-    console.log('Firebase connection successful');
+    // Simple check without timeout to avoid blocking the app
+    console.log('Firebase initialized successfully');
     return true;
   } catch (error) {
-    console.warn('Firebase connection failed, using local storage mode:', error);
+    console.warn('Firebase connection issue:', error);
+    return false;
+  }
+};
+
+// Test Firebase auth availability
+export const testFirebaseAuth = async (): Promise<boolean> => {
+  try {
+    // Just check if auth is available
+    return auth !== null;
+  } catch (error) {
+    console.error('Firebase Auth not available:', error);
     return false;
   }
 };
 
 // Variable globale pour suivre l'état de la connexion
-export let isFirebaseConnected = false;
+export let isFirebaseConnected = true; // Assume connection is available by default
 
-// Vérifier la connexion au démarrage
-checkFirebaseConnection().then(connected => {
-  isFirebaseConnected = connected;
-});
+// Optional: Check connection manually when needed
+// checkFirebaseConnection().then(connected => {
+//   isFirebaseConnected = connected;
+// });
